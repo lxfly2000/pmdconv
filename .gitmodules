@@ -1,0 +1,6 @@
+[submodule "midifile"]
+	path = midifile
+	url = https://github.com/craigsapp/midifile
+[submodule "pmdplay"]
+	path = pmdplay
+	url = https://github.com/lxfly2000/pmdplay
