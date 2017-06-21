@@ -8,8 +8,16 @@ function Unzip
 
 #更新midifile库到文件夹中
 $webc = New-Object System.Net.WebClient
-$webc.DownloadFile("https://github.com/craigsapp/midifile/zipball/master","$PSScriptRoot\midifile.zip")
-$webc.DownloadFile("https://github.com/lxfly2000/pmdplay/archive/master.zip","$PSScriptRoot\pmdplay.zip")
+if(!(Test-Path "$PSScriptRoot\midifile.zip"))
+{
+	echo "下载 midifile..."
+	$webc.DownloadFile("https://github.com/craigsapp/midifile/zipball/master","$PSScriptRoot\midifile.zip")
+}
+if(!(Test-Path "$PSScriptRoot\pmdplay.zip"))
+{
+	echo "下载 pmdplay..."
+	$webc.DownloadFile("https://github.com/lxfly2000/pmdplay/archive/master.zip","$PSScriptRoot\pmdplay.zip")
+}
 
 Unzip "midifile.zip" "."
 Unzip "pmdplay.zip" "."
