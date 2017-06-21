@@ -27,26 +27,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -180,7 +180,6 @@
     <ClInclude Include="fmgen\opna.h" />
     <ClInclude Include="fmgen\psg.h" />
     <ClInclude Include="fmgen\types.h" />
-    <ClInclude Include="pmdmini.h" />
     <ClInclude Include="pmdwin\compat.h" />
     <ClInclude Include="pmdwin\opnaw.h" />
     <ClInclude Include="pmdwin\p86drv.h" />
@@ -200,7 +199,6 @@
     <ClCompile Include="fmgen\opm.cpp" />
     <ClCompile Include="fmgen\opna.cpp" />
     <ClCompile Include="fmgen\psg.cpp" />
-    <ClCompile Include="pmdmini.c" />
     <ClCompile Include="pmdwin\opnaw.cpp" />
     <ClCompile Include="pmdwin\p86drv.cpp" />
     <ClCompile Include="pmdwin\pmdwin.cpp" />

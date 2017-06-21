@@ -35,3 +35,9 @@ $path = join-path $path 'MSBuild\15.0\Bin\MSBuild.exe'
 &$path midifile\visual-studio\midifile.vcxproj "/p:Configuration=Release;Platform=Win32;PlatformToolset=v141;WindowsTargetPlatformVersion=10.0.14393.0"
 &$path pmdplay "/p:Configuration=Debug;Platform=Win32;PlatformToolset=v141;WindowsTargetPlatformVersion=10.0.14393.0;CharacterSet=MultiByte"
 &$path pmdplay "/p:Configuration=Release;Platform=Win32;PlatformToolset=v141;WindowsTargetPlatformVersion=10.0.14393.0;CharacterSet=MultiByte"
+md bin
+move pmdplay\Release\pmdplay.dll .\bin
+
+#构建主程序
+&$path pmdconv.vcxproj "/p:Configuration=Release;Platform=Win32"
+move Release\pmdconv.exe .\bin
