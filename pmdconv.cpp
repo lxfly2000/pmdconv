@@ -42,6 +42,8 @@ int Convert(const char *infile, const char *outfile)
 	const int buf_length = 8192;
 	short buf[buf_length];
 	//TODO
+	//普通音符直接获取每通道QQ中的信息即可，节奏部分采用R通道音符，可以获取到音量，Tom需要参考K通道鼓点。
+	printf("TODO:程序正在制作中。\n如需获取程序更新，请关注 https://github.com/lxfly2000/pmdconv.");
 	music_stop();
 	return 0;
 }
