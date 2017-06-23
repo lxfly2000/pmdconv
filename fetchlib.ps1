@@ -19,20 +19,18 @@ if(!(Test-Path "$PSScriptRoot\pmdplay.zip"))
 	$webc.DownloadFile("https://github.com/lxfly2000/pmdplay/archive/master.zip","$PSScriptRoot\pmdplay.zip")
 }
 
-Unzip "midifile.zip" "."
-Unzip "pmdplay.zip" "."
-if(Test-Path "midifile")
+if(!(Test-Path "midifile"))
 {
-	rd -Recurse "midifile"
+	Unzip "midifile.zip" "."
+	move "*midifile-*" "midifile"
 }
-move "*midifile-*" "midifile"
-if(Test-Path "pmdplay")
+if(!(Test-Path "pmdplay"))
 {
-	rd -Recurse "pmdplay"
+	Unzip "pmdplay.zip" "."
+	move "*pmdplay-*" "pmdplay"
+	del pmdplay\pmdplay.vcxproj
+	copy pmdplay.vcxproj pmdplay\
 }
-move "*pmdplay-*" "pmdplay"
-del pmdplay\pmdplay.vcxproj
-copy pmdplay.vcxproj pmdplay\
 
 #≤È’“MSBuild
 $path = &"${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
