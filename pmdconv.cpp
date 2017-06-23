@@ -133,10 +133,13 @@ int Convert(const char *infile, const char *outfile)
 	{
 		char tname[32];
 		sprintf(tname, "PMD Ch %c", 'A' + i);
-		mf.addTrackName(i, 0, tname);
+		mf.addTrackName(i + 1, 0, tname);
 	}
-	int nowtick = getpos2();
+	int _nowtick = getpos2();
 	int lengthtick = 0, looplengthtick = 0;
+	int offset_tick = 0;
+	bool firstkey = true;
+#define nowtick max(0,_nowtick-offset_tick)
 	getlength2(musicfilepath, &lengthtick, &looplengthtick);
 	for (int i = 6; i <= 8; i++)mf.addPatchChange(i + 1, 0, i, 80);
 	while (nowtick < lengthtick)
@@ -147,6 +150,11 @@ int Convert(const char *infile, const char *outfile)
 		{
 			if (pmdch.chnote[i].IsOnNoteOn())
 			{
+				if (firstkey)
+				{
+					firstkey = false;
+					offset_tick = _nowtick;
+				}
 				if (pmdch.chnote[i].keyison)mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].last_note);
 				pmdch.chnote[i].keyison = true;
 				if (pmdch.chnote[i].note < 128)
@@ -161,7 +169,7 @@ int Convert(const char *infile, const char *outfile)
 			if (pmdch.chnote[i].IsOnProgramChange())mf.addPatchChange(i + 1, nowtick, i, g_patch[pmdch.chnote[i].patch]);
 		}
 		getpcmdata((short*)renbuf, min(SOUND_44K, SOUND_44K * 60 / tpq / pmdch.tempo));
-		nowtick = getpos2();
+		_nowtick = getpos2();
 	}
 	for (int i = 0; i < 9; i++)
 		if (pmdch.chnote[i].keyison)
