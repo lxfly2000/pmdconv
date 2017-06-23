@@ -19,10 +19,18 @@ if(!(Test-Path "$PSScriptRoot\pmdplay.zip"))
 	$webc.DownloadFile("https://github.com/lxfly2000/pmdplay/archive/master.zip","$PSScriptRoot\pmdplay.zip")
 }
 
+if(!(Get-ChildItem -Recurse -Path midifile))
+{
+	rd midifile
+}
 if(!(Test-Path "midifile"))
 {
 	Unzip "midifile.zip" "."
 	move "*midifile-*" "midifile"
+}
+if(!(Get-ChildItem -Recurse -Path pmdplay))
+{
+	rd pmdplay
 }
 if(!(Test-Path "pmdplay"))
 {
