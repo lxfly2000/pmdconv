@@ -13,6 +13,7 @@
 #include<iostream>
 #include<fstream>
 #define MAX_PMD_PATCH 256
+#define MAX_PMD_RHYTHM_NUM 11
 int g_patch[MAX_PMD_PATCH];
 void InitPatch()
 {
@@ -26,9 +27,12 @@ void InitPatch()
 	else
 	{
 		int i = 0;
+		std::string input;
 		while (i < MAX_PMD_PATCH)
 		{
-			pf >> g_patch[i];
+			std::getline(pf, input);
+			if (input[0] == ';')continue;
+			g_patch[i] = atoi(input.c_str());
 			if (g_patch[i] > 127)printf("音色[%d]=%d, 超出最大值 127.\n", i, g_patch[i]);
 			i++;
 			if (pf.eof())break;
@@ -77,12 +81,42 @@ private:
 };
 struct ChannelRhythm
 {
-	int notes[128] = { 0 };
+	bool notes_on[MAX_PMD_RHYTHM_NUM] = { false }, last_notes_on[MAX_PMD_RHYTHM_NUM] = { false };
+	bool rhythm_started = false;
+	const int krhythmToGMNote[MAX_PMD_RHYTHM_NUM] = { 36,38,45,47,50,37,40,42,46,49,51 };
 	int volume = 0;//最大63
 	void UpdateChannel()
 	{
+		last_volume = volume;
 		volume = getopenwork()->rhyvol;
+		last_rhyaddr = rhyaddr;
+		rhyaddr = getopenwork()->rhyadr;
+		if (!rhythm_started&&getopenwork()->kshot_dat)
+		{
+			rhythm_started = true;
+			printf("注意：由于 PMDWin 的限制，本程序无法保证转换出来的节奏完全正确。\n");
+		}
+		for (int i = 0; i < MAX_PMD_RHYTHM_NUM; i++)
+		{
+			last_notes_on[i] = notes_on[i];
+			notes_on[i] = (getopenwork()->kshot_dat >> i) & 1;
+		}
 	}
+	bool IsOnVolumeChange()
+	{
+		return (last_volume != volume) && rhythm_started;
+	}
+	bool IsOnRhythmUpdate()
+	{
+		return last_rhyaddr != rhyaddr;
+	}
+	int GetVolumeInGM()
+	{
+		return volume * 127 / 63;
+	}
+private:
+	int last_volume = 0;
+	uchar *rhyaddr = NULL, *last_rhyaddr = NULL;
 };
 struct Channels
 {
@@ -95,6 +129,7 @@ struct Channels
 	void Update()
 	{
 		for (int i = 0; i < 9; i++)chnote[i].UpdateChannel();
+		chrhy.UpdateChannel();
 		last_tempo = tempo;
 		tempo = getopenwork()->tempo_48 * 2;
 	}
@@ -125,8 +160,7 @@ int Convert(const char *infile, const char *outfile)
 	int tpq = getopenwork()->syousetu_lng / 4;
 	MidiFile mf;
 	Channels pmdch;
-	int bytesof_buf = SOUND_44K * 2 * 2;//一秒音频的内存长度
-	char *renbuf = new char[bytesof_buf];
+	char renbuf[SOUND_44K * 2 * 2];//一秒音频的内存长度
 	mf.addTrack(10);
 	mf.setTicksPerQuarterNote(tpq);
 	for (int i = 0; i < 9; i++)
@@ -135,6 +169,7 @@ int Convert(const char *infile, const char *outfile)
 		sprintf(tname, "PMD Ch %c", 'A' + i);
 		mf.addTrackName(i + 1, 0, tname);
 	}
+	mf.addTrackName(10, 0, "PMD Rhythm");
 	int _nowtick = getpos2();
 	int lengthtick = 0, looplengthtick = 0;
 	int offset_tick = 0;
@@ -168,6 +203,16 @@ int Convert(const char *infile, const char *outfile)
 			}
 			if (pmdch.chnote[i].IsOnProgramChange())mf.addPatchChange(i + 1, nowtick, i, g_patch[pmdch.chnote[i].patch]);
 		}
+		if (pmdch.chrhy.IsOnRhythmUpdate())
+		{
+			for (int i = 0; i < MAX_PMD_RHYTHM_NUM; i++)
+			{
+				if (pmdch.chrhy.last_notes_on[i])
+					mf.addNoteOff(10, nowtick, 9, pmdch.chrhy.krhythmToGMNote[i]);
+				if (pmdch.chrhy.notes_on[i])
+					mf.addNoteOn(10, nowtick, 9, pmdch.chrhy.krhythmToGMNote[i], pmdch.chrhy.GetVolumeInGM());
+			}
+		}
 		getpcmdata((short*)renbuf, min(SOUND_44K, SOUND_44K * 60 / tpq / pmdch.tempo));
 		_nowtick = getpos2();
 	}
@@ -175,7 +220,6 @@ int Convert(const char *infile, const char *outfile)
 		if (pmdch.chnote[i].keyison)
 			mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].note);
 	//TODO:实现节奏通道转换
-	delete[]renbuf;
 	music_stop();
 	mf.sortTracks();
 	mf.write(outfile);
