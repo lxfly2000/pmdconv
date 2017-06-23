@@ -1,0 +1,2 @@
+;本音色转换表仅适用于以thfm.ff作为音色的文件，你可以到 http://bbs.nyasama.com/forum.php?mod=viewthread&tid=69065 下载该音色表。
+33

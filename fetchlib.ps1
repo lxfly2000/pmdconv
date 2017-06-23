@@ -55,3 +55,4 @@ move pmdplay\Release\pmdplay.dll .\bin
 #构建主程序
 &$path pmdconv.vcxproj "/p:Configuration=Release;Platform=Win32"
 move Release\pmdconv.exe .\bin
+copy patch.txt .\bin
