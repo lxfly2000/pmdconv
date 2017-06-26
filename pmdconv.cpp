@@ -219,7 +219,6 @@ int Convert(const char *infile, const char *outfile)
 	for (int i = 0; i < 9; i++)
 		if (pmdch.chnote[i].keyison)
 			mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].note);
-	//TODO:实现节奏通道转换
 	music_stop();
 	mf.sortTracks();
 	mf.write(outfile);
