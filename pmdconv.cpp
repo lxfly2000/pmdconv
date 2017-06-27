@@ -72,7 +72,7 @@ struct ChannelNote
 	}
 	bool IsOnNoteOff()
 	{
-		return (getpartwork(ch)->keyoff_flag != 0) || (note >= 128 && last_note < 128);
+		return (getpartwork(ch)->keyoff_flag == -1) || (note >= 128 && last_note < 128);//一定是判断-1，因为还有2表示弯音的情况
 	}
 	bool IsOnProgramChange()
 	{
@@ -197,7 +197,7 @@ int Convert(const char *infile, const char *outfile)
 		mf.addController(i + 1, 0, i, 0x65, 0);//设置RPN的高位为弯音
 		mf.addController(i + 1, 0, i, 0x64, 0);//设置RPN的低位为弯音
 		mf.addController(i + 1, 0, i, 0x06, PITCH_BEND_RANGE_HALFTONE);//将弯音范围设置为12个半音（即一个八度）
-		mf.addController(i + 1, 0, i, 0x26, 0);//低位没用到，给0就行了
+		//mf.addController(i + 1, 0, i, 0x26, 0);//低位没用到，给0就行了
 	}
 	while (nowtick < lengthtick)
 	{
@@ -205,6 +205,15 @@ int Convert(const char *infile, const char *outfile)
 		if (pmdch.IsTempoChanged())mf.addTempo(0, nowtick, pmdch.tempo);
 		for (int i = 0; i < 9; i++)
 		{
+			if (pmdch.chnote[i].IsOnProgramChange())
+			{
+				if (firstkey)
+				{
+					firstkey = false;
+					offset_tick = _nowtick;
+				}
+				mf.addPatchChange(i + 1, nowtick, i, g_patch[pmdch.chnote[i].patch]);
+			}
 			if (pmdch.chnote[i].IsOnNoteOn())
 			{
 				if (firstkey)
@@ -223,7 +232,6 @@ int Convert(const char *infile, const char *outfile)
 				if (pmdch.chnote[i].last_note < 128)
 					mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].last_note);
 			}
-			if (pmdch.chnote[i].IsOnProgramChange())mf.addPatchChange(i + 1, nowtick, i, g_patch[pmdch.chnote[i].patch]);
 			if (pmdch.chnote[i].IsOnPitchBend())mf.addPitchBend(i + 1, nowtick, i, pmdch.chnote[i].pitchbend/(PITCH_BEND_RANGE_HALFTONE*50.0));
 		}
 		if (pmdch.chrhy.IsOnRhythmUpdate())
@@ -243,7 +251,7 @@ int Convert(const char *infile, const char *outfile)
 		if (pmdch.chnote[i].keyison)
 			mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].note);
 	music_stop();
-	mf.sortTracks();
+	//mf.sortTracks();//sort会打乱顺序所以不要
 	mf.write(outfile);
 	return 0;
 }
