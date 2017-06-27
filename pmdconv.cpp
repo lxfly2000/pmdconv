@@ -14,6 +14,7 @@
 #include<fstream>
 #define MAX_PMD_PATCH 256
 #define MAX_PMD_RHYTHM_NUM 11
+#define PITCH_BEND_RANGE_HALFTONE 12
 int g_patch[MAX_PMD_PATCH];
 void InitPatch()
 {
@@ -46,6 +47,7 @@ struct ChannelNote
 	int volume = 0;//FM最大127，SSG最大15
 	int patch = 0;
 	int ch = 0;
+	int pitchbend = 0;
 	bool keyison = false;
 	void UpdateChannel()
 	{
@@ -56,6 +58,13 @@ struct ChannelNote
 		note = (getpartwork(ch)->onkai & 0xF) + ((getpartwork(ch)->onkai >> 4) * 12);
 		last_key_on_count = key_on_count;
 		key_on_count = getpartwork(ch)->keyon_flag;
+		last_pitchbend = pitchbend;
+		pitchbend = getpartwork(ch)->porta_num;//porta_num表示弯多少半音，每50为一个半音，正数表示向上弯，负数向下弯
+		if (!lfo_found&&getpartwork(ch)->lfoswi)
+		{
+			lfo_found = true;
+			printf("检测到 Ch %c 含有 LFO，请手动在转换后的 MIDI 中添加相应参数。（CC#1等）\n", 'A' + ch);
+		}
 	}
 	bool IsOnNoteOn()
 	{
@@ -69,6 +78,10 @@ struct ChannelNote
 	{
 		return last_patch != patch;
 	}
+	bool IsOnPitchBend()
+	{
+		return last_pitchbend != pitchbend;
+	}
 	int GetVolumeInGM()
 	{
 		if (ch < 6)return volume;
@@ -78,6 +91,8 @@ private:
 	int last_key_on_count = 0;
 	int last_patch = 0;
 	int key_on_count = 0;
+	int last_pitchbend = 0;
+	bool lfo_found = false;
 };
 struct ChannelRhythm
 {
@@ -177,6 +192,13 @@ int Convert(const char *infile, const char *outfile)
 #define nowtick max(0,_nowtick-offset_tick)
 	getlength2(musicfilepath, &lengthtick, &looplengthtick);
 	for (int i = 6; i <= 8; i++)mf.addPatchChange(i + 1, 0, i, 80);
+	for (int i = 0; i < 9; i++)
+	{
+		mf.addController(i + 1, 0, i, 0x65, 0);//设置RPN的高位为弯音
+		mf.addController(i + 1, 0, i, 0x64, 0);//设置RPN的低位为弯音
+		mf.addController(i + 1, 0, i, 0x06, PITCH_BEND_RANGE_HALFTONE);//将弯音范围设置为12个半音（即一个八度）
+		mf.addController(i + 1, 0, i, 0x26, 0);//低位没用到，给0就行了
+	}
 	while (nowtick < lengthtick)
 	{
 		pmdch.Update();
@@ -202,6 +224,7 @@ int Convert(const char *infile, const char *outfile)
 					mf.addNoteOff(i + 1, nowtick, i, pmdch.chnote[i].last_note);
 			}
 			if (pmdch.chnote[i].IsOnProgramChange())mf.addPatchChange(i + 1, nowtick, i, g_patch[pmdch.chnote[i].patch]);
+			if (pmdch.chnote[i].IsOnPitchBend())mf.addPitchBend(i + 1, nowtick, i, pmdch.chnote[i].pitchbend/(PITCH_BEND_RANGE_HALFTONE*50.0));
 		}
 		if (pmdch.chrhy.IsOnRhythmUpdate())
 		{
