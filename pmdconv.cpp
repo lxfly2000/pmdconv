@@ -2,14 +2,14 @@
 //midifile²Î¿¼£ºhttps://github.com/craigsapp/midifile
 #ifdef _DEBUG
 #pragma comment(lib,"midifile\\visual-studio\\DebugLib\\midifile.lib")
-#pragma comment(lib,"pmdplay\\Debug\\pmdplay.lib")
 #else
 #pragma comment(lib,"midifile\\visual-studio\\ReleaseLib\\midifile.lib")
-#pragma comment(lib,"pmdplay\\Release\\pmdplay.lib")
 #endif
+#pragma comment(lib,"PMDWin\\PMDWin.lib")
 #define _WINDOWS
+#include<Windows.h>
 #include"midifile\include\MidiFile.h"
-#include"pmdplay\pmdwin\pmdwinimport.h"
+#include"PMDWin\PMDWinImport.h"
 #include<iostream>
 #include<fstream>
 #define MAX_PMD_PATCH 256
